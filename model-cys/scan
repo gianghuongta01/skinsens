@@ -1,0 +1,36 @@
+#!/usr/bin/perl
+#
+# program to systemically scan C and gamma for SVMLIB
+#
+# predefined parameters
+# svm type: epsilon-SVR (3)
+$type = 3;
+
+# kernel radial basis
+$kernel = 2;
+
+#cost
+@C = (100, 200, 300, 400, 500, 600, 700, 800, 900, 1000);
+
+#gamma
+@gamma = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0);
+
+#epsilon
+@epsilon = (0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0);
+
+foreach $i (@gamma) {
+   foreach $j (@C) {
+      foreach $k (@epsilon) {
+	 $no = sprintf ("%04d", $m);
+	 open (OUT, "> train$no.log") || die "\nCan't open the output file train$no.log!\n";
+	 print OUT "Cost = $j\ngamma = $i\nepsilon= $k\n=============================\n";
+	 close OUT;
+         system "svm-train -s $type -t $kernel  -g $i -c $j -p $k train.dat>>train$no.log";
+         system "mv train.dat.model train$no.model";
+         system "svm-predict train.dat train$no.model train$no.out>>train$no.out";
+         system "svm-predict test.dat train$no.model test$no.out>>test$no.out";
+         system "svm-predict ev.dat train$no.model ev$no.out>>ev$no.out";
+	 $m++;
+      }
+   }
+}
